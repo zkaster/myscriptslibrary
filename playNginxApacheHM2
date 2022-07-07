@@ -1,0 +1,132 @@
+---
+- name: Proxy Nginx+Apache backend Debian and RedHead Homework
+  hosts: all
+  become: yes
+
+  vars:
+   src: /home/zkaster/ansible/
+   dst: /etc/apache2/
+
+#--------------------
+  tasks:
+#---
+  - name: Ping all
+    ping:
+#---
+#  - name: Get docker’s official GPG key
+#    ansible.builtin.apt_key:
+#     url: https://download.docker.com/linux/ubuntu/gpg
+#     keyring: /etc/apt/keyrings/docker.gpg
+#     state: present
+#---
+#  - name: Set up the repository
+#    lineinfile:
+#     path: /etc/apt/sources.list.d/docker.list
+#     line: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.do>
+#     create: yes
+
+#----++Debiabn++----
+  - block:
+    - name: Install NGINX -> Ubuntu
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+    - name: Install Apache -> Ubuntu
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+#----------
+    - name: Copy  Apache files1 Debian
+      copy:
+       src: "{{ src }}ports.conf"
+       dest: "{{ dst }}ports.conf"
+      notify: apache2 reload
+    - name: Copy  Apache files2 Debian
+      copy:
+       src: "{{ src }}apdefconf.conf"
+       dest: "{{ dst }}/sites-enabled/000-default.conf"
+      notify: apache2 reload
+    - name: Copy file to NGINX
+      copy:
+       src: "{{ src }}test.conf"
+       dest: /etc/nginx/sites-enabled/
+      notify: nginx reload
+    - name: Delete default
+      file:
+       path: /etc/nginx/sites-enabled/default
+       state: absent
+      notify: nginx reload
+#---------
+    - name: Start Apache
+      service:
+       name: apache2
+       state: restarted
+    - name: Restart nginx
+      service:
+       name: nginx
+       state: restarted
+    when: ansible_os_family == "Debian"
+
+#----++RedHat++----
+  - block:
+    - name: Install httpd on Redhat
+      yum:
+       name: httpd
+       state: present
+    - name: Install NGINX on Redhat
+      yum:
+       name: nginx
+       state: present
+#----------
+    - name: Copy  Apache files1 Redhat
+      copy:
+       src: "{{ src }}ports.conf"
+       dest: "{{ dst }}ports.conf"
+      notify: httpd reload
+    - name: Copy Apache files2 Redhat
+      copy:
+       src: "{{ src }}apdefconf.conf"
+       dest: "{{ dst }}/sites-enabled/000-default.conf"
+      notify: httpd reload
+    - name: Copy file to NGINX RedHat
+      copy:
+       src: "{{ src }}test.conf"
+       dest: /etc/nginx/sites-enabled/
+      notify: nginx reload
+    - name: Delete default
+      file:
+       path: /etc/nginx/sites-enabled/default
+       state: absent
+      notify: nginx reload
+#---------
+    - name: Start httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    - name: Start NGINX
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+    when: ansible_os_family == "RedHat"
+#-----HANDLERS----------
+  handlers:
+  - name: apache2 reload
+    service:
+      name: apache2
+      state: reloaded
+
+  - name: httpd reload
+    service:
+      name: httpd
+      state: reloaded
+
+  - name: nginx reload
+    service:
+      name: nginx
+      state: reloaded
+
+

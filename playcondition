@@ -1,0 +1,66 @@
+---
+- name: Install Apache or hhtpd, Redhat Ubuntu
+  hosts: all
+  become: true
+
+  vars:
+   src: /home/zkaster/index.html
+   dest: /var/www/index.html
+
+#-----------Debian------
+  tasks:
+#-----Keys--------
+  - name: Get docker’s official GPG key
+    ansible.builtin.apt_key:
+     url: https://download.docker.com/linux/ubuntu/gpg
+     keyring: /etc/apt/keyrings/docker.gpg
+     state: present
+
+  - name: Set up the repository
+    lineinfile:
+     path: /etc/apt/sources.list.d/docker.list
+     line: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.>
+     create: yes
+
+  - block:
+    - name: Install Apache -> Ubuntu
+      apt:
+        name: apache2
+        state: present
+        update_cache: no
+    - name:
+      copy:
+       src: "{{ src }}"
+       dest: "{{ dest }}"
+      notify: apache2 reload
+    when: ansible_os_family == "Debian"
+#------REDHAT-----
+  - block:
+    - name: Install httpd on Redhat
+      yum:
+       name: httpd
+       state: latest
+
+    - name:
+      copy:
+       src: "{{ src }}"
+       dest: "{{ dest }}"
+      notify: httpd reload
+
+    - name: Start httpd
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+    when: ansible_os_family == "RedHat"
+#-----HANDLERS----------
+  handlers:
+  - name: apache2 reload
+    service:
+      name: apache2
+      state: reloaded
+
+  - name: httpd reload
+    service:
+      name: httpd
+      state: reloaded

@@ -1,0 +1,43 @@
+---
+- name: Ping servers
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Ping ansible-cl1 and ansible-cl2
+    ping:
+#----------
+  - name: Install NGINX
+    shell:
+     cmd: 'sudo apt update && sudo apt install nginx'
+  - name: Install Apache
+    shell:
+     cmd: 'sudo apt update && sudo apt install apache2 -y'
+#----------
+  - name:
+    copy:
+     src: /home/zkaster/ansible/ports.conf
+     dest: /etc/apache2/ports.conf
+  - name:
+    copy:
+     src: /home/zkaster/ansible/apdefconf.conf
+     dest: /etc/apache2/sites-enabled/000-default.conf
+  - name: Copy file to NGINX
+    copy:
+     src: /home/zkaster/ansible/test.conf
+     dest: /etc/nginx/sites-enabled/
+  - name: Delete default
+    file:
+     path: /etc/nginx/sites-enabled/default
+     state: absent
+#---------
+  - name: Start Apache
+    service:
+     name: apache2
+     state: restarted
+  - name: Restart nginx
+    service:
+     name: nginx
+     state: restarted
+#---------
+

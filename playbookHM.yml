@@ -1,0 +1,56 @@
+---
+- name: Ping servers
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Ping ansible-cl1 and ansible-cl2
+    ping:
+
+#  - name: Start docker image with
+#    shell:
+#      cmd: "docker run --rm -it -p 3000:3000 ghcr.io/benc-uk/nodejs-demoapp:latest"
+ 
+  - name: Copy file test-dir
+    copy:
+     src: /home/zkaster/ansible/Dockerfile
+     dest: /home/zkaster/Dockerfile
+  - name: Copy file nginx conf
+    copy:
+     src: /home/zkaster/ansible/test.conf
+     dest: /home/zkaster/test.conf
+  - name: Copy WEB files
+    copy:
+     src: index.html
+     dest: index.html
+  - name: Build Docker Nginx from Dockerfile
+    shell:
+      cmd: 'sudo docker build -t nginx22 .'
+#  - name: Build docker with community module
+#    community.docker.docker_image:
+#     build:
+#      path: .
+#      dockerfile: present
+#     tag: TEST
+
+#  - name: Check Docker images
+#    command: docker images
+#    registr: hello
+#  - debug: msg={{ hello.stdout_lines}}
+
+  - name: Docker start
+    shell:
+     cmd: 'sudo docker run -d --name nginx33 -p 80:80 -v /home/zkaster/index.html:/opt/app/html/index.html nginx22'
+###     owner: zkaster
+###     group: users
+###     mode: '0755'
+
+###  - name: Delete file
+###    file:
+###     path: /tmp/playbook1.yml
+###     state: absent
+
+###  - name: Install TREE
+###    apt:
+###     name: tree
+###     update_cache: yes

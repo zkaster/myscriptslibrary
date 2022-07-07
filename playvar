@@ -1,0 +1,48 @@
+---
+- name: Test vars
+  hosts: all
+  become: yes
+
+  vars:
+   msg1: Hello
+   msg2: World
+   msg3: 123 !!!
+   src: /home/zkaster/test.txt
+   dest: /home/zkaster/test.txt
+
+  tasks:
+  - name: Show msg1
+    debug:
+      var: msg1
+
+  - name: Show msgw
+    debug:
+     msg: "Var MSG2={{ msg1 }} {{ msg2 }}"
+
+  - name: Copy over variables
+    copy:
+     src: "{{ src }}"
+     dest: "{{ dest }}"
+
+  - name: Uptime
+    shell:
+     cmd: "uptime"
+    register: uptimesrv
+  - name:
+    debug:
+     msg: "Uptime={{uptimesrv.stdout_lines}}"
+
+  - name: LS
+    shell:
+     cmd: "ls -l"
+    register: lsout
+  - name:
+    debug:
+     msg: "LS={{lsout.stdout_lines}}"
+  - name: Show version Python
+    debug:
+     msg: "Version Python = {{ ansible_python_version }}"
+ 
+  - name: Show OS
+    debug:
+     msg: "Type OS = {{ ansible_nodename }} {{ ansible_os_family }}"

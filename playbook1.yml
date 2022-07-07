@@ -1,0 +1,13 @@
+---
+- name: Ping servers
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Ping ansible-cl1 and ansible-cl2
+    ping:
+
+  - name: Make directory test-dir
+    file:
+     path: /tmp/test-dir
+     state: directory

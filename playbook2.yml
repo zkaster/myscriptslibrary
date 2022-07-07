@@ -1,0 +1,26 @@
+---
+- name: Ping servers
+  hosts: ansible-cl1
+  become: yes
+
+  tasks:
+  - name: Ping ansible-cl1 and ansible-cl2
+    ping:
+
+  - name: Copy file test-dir
+    copy:
+     src: ~/ansible/playbook.yml
+     dest: /tmp/
+     owner: zkaster
+     group: users
+     mode: '0755'
+
+  - name: Delete file
+    file:
+     path: /tmp/playbook1.yml
+     state: absent
+
+  - name: Install TREE
+    apt:
+     name: tree
+     update_cache: yes

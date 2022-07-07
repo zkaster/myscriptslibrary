@@ -1,0 +1,5 @@
+---
+- name: Remove docker images and  containers
+  shell:
+  args:
+   cmd: sudo docker rm nginx123 -f
